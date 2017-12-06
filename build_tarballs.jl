@@ -38,5 +38,5 @@ products = prefix -> [
 ]
 
 # Build the given platforms using the given sources
-autobuild(pwd(), "linux", build_platforms, sources, script, products)
+autobuild(pwd(), "linux", platforms, sources, script, products)
 
