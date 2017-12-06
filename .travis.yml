@@ -1,0 +1,43 @@
+language: julia
+os:
+  - linux
+julia:
+  - 0.6
+notifications:
+  email: false
+git:
+  depth: 99999999
+cache:
+  timeout: 1000
+  directories:
+    - downloads
+env:
+  global:
+    - BINARYBUILDER_DOWNLOADS_CACHE=downloads
+    - BINARYBUILDER_AUTOMATIC_APPLE=false
+sudo: required
+
+# Before anything else, get the latest versions of things
+before_script:
+  - julia -e 'Pkg.clone("https://github.com/JuliaPackaging/BinaryProvider.jl")'
+  - julia -e 'Pkg.clone("https://github.com/JuliaPackaging/BinaryBuilder.jl"); Pkg.build()'
+
+script:
+  - julia build_tarballs.jl
+  
+before_cache:
+  - rm -rf $(julia -e 'println(Pkg.dir("BinaryBuilder","deps","root"))')
+
+
+deploy:
+    provider: releases
+    api_key:
+        # Note; this api_key is only valid for Keno/LinuxBuilder; you need
+        # to make your own: https://docs.travis-ci.com/user/deployment/releases/
+        secure: oFugt+eb+QMpVxUA4ExHwHl+Vmj18njPqSfWoEqqVIdADc6cdZPan1CbXz8T6Hu4pCDdKkoz+cAgKlQjRDLC5cau7Sja38SJV6IIKHDUoTj1UI5mzF/J3fGJo+H85cGk8E9Z/a+SuwFQV63nh5SJUY3RFaOHIDIWIlsJ3mJGRZ6npjY0vAL4KjexHd+vzMFrjyEEKmQo/kUbEcJ6H6snIDFmWyfz6JkmGaq1F8zrVbhxOCj0CTs4FTTGv1Bd0e1s11h8ub7F3j4QcBfPiSMkXDY9xxo615bCUK3ZZ+DqNItvRh02wf345X7/0VeP9QhZl78H8fzYq5QaJB/W9FIEq8UYmVFLwNL2zgMuMz4gOmDyaEEJj+bCgHQO37lo+sGP272Wxrbm58HA9SOK1p8FfBgUA8T0lYBE8aOFqVYo5sYrBHGcSPRpICAcn6N3Q4bXsOAsEl7qjuF00NHtqJVjyoirCIH3vGXd8qh5fTQeyrTQYdXDJEt1OyvMrnt+rRbp156wGhyM5sfwBHj/FmrcT4PC+7FdqjsqU7A5MNuAdOWbBV7cP9jlVG/DxvouC8/p81xxaoMf8aDLAUYJQ6t8egm6mZSl3SSlM2MZen9xRk4NleGsHKKiqyaQH146RArcbaLA0e6oCP6FdqtmcVKe5ZlnSVK//6/Zh5n9u7ZkMi4=
+    file_glob: true
+    file: products/*.tar.gz
+    skip_cleanup: true
+    on:
+        repo: Keno/LinuxBuilder
+        tags: true
